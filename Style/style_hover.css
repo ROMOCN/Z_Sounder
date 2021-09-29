@@ -1,0 +1,26 @@
+QSlider::groove:horizontal {
+background: #C0C0C0;
+height: 8px;
+border-radius: 4px;
+}
+
+QSlider::sub-page:horizontal {
+background: #e9c382;
+height: 10px;
+border-radius: 4px;
+}
+
+QSlider::add-page:horizontal {
+background: #575757;
+height: 10px;
+border-radius: 4px;
+}
+
+QSlider::handle:horizontal 
+{
+    background: #ff8400;
+    width: 11px;
+    margin-top: 0px;
+    margin-bottom: 0px;
+    border-radius: 5px;
+}
