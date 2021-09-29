@@ -95,9 +95,9 @@ void MainWindow:: thread_readData()
     Sheets sheets = sql.get_AllSheet();
     for(auto i : sheets)
     {
-        if(i.first < 2)
+        if(i.first < 10002)
             continue;
-        _list->add_sheet(i.second.name);
+        _list->add_sheet(i.second.name, i.second.id);
     }
     for(auto i :allmusic)
     {
@@ -107,6 +107,7 @@ void MainWindow:: thread_readData()
             _list->add_music(i.first, j.favorFrom,j.favor, j.Title ,j.Performer, j.Album, j.Duration, j.Path);
         }
     }
+
     //_list->add_music();
 }
 
@@ -114,14 +115,14 @@ void MainWindow::db_addDefaultSheet()
 {
     std::list<SqlBase> sheet;
     SqlBase favor, def;
-    favor.setData("Sheet_Id", 0);
+    favor.setData("Sheet_Id", 10000);
     def.setData("Sheet_Name", "我的收藏");
     sheet.push_back(favor);
     sheet.push_back(def);
 
     std::list<SqlBase> sheet2;
     SqlBase favor2, def2;
-    favor2.setData("Sheet_Id", 1);
+    favor2.setData("Sheet_Id", 10001);
     def2.setData("Sheet_Name", "默认歌单");
     sheet2.push_back(favor2);
     sheet2.push_back(def2);

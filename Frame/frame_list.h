@@ -14,30 +14,27 @@
 #include "Controls/my_delegatebtn.h"
 #include "Controls/my_messagebox.h"
 
-class My_Item :public QListWidgetItem
-{
 
-};
 
 class Frame_List : public QWidget
 {
     Q_OBJECT
     QMediaPlaylist *_list;
     My_DelegateBtn * _dbtn;
-    int current_sheet;
-    int current_music;
     QMenu *menu_music;
     QMenu *menu_sheet;
 
 public:
     int currentSheet()
     {
-        return list_sheet->currentRow();
+        int sheet_id = ((My_Item*) list_sheet->item(list_sheet->currentRow()))->Sheet_Id;
+        return sheet_id;
+        //return list_sheet->currentRow();
     }
     explicit Frame_List(QWidget *parent = nullptr);
     void add_sheet();
-    void add_sheet(QString name, QString iconPath);
-    void add_sheet(QString name);
+    void add_sheet(QString name, QString iconPath ,int sheetId = 0);
+    void add_sheet(QString name,int sheetId = 0);
     //void add_music(QString path);
     bool add_music(int sheet_id, int favorFrom ,bool favor, QString title, QString performer, QString album, QString duration, QString path);
     bool add_music(int sheet_id, int favorFrom , bool favor,QString path);

@@ -43,7 +43,7 @@ void My_Table::add_model(int sheetId)
 
 void My_Table::set_model(int sheetId)
 {
-    if(sheetId >= 0 && !_models.empty())
+    if(sheetId >= 10000 && !_models.empty())
     {
         currentModelId = sheetId;
         QStandardItemModel *model = _models.find(sheetId)->second;

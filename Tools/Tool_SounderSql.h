@@ -101,11 +101,11 @@ public:
     {
         QString cmd1 = QString("delete from sounder_sheet where Sheet_Id = %1 ;").arg(sheet_id);
         QString cmd2 = QString("delete from sounder_music where Sheet_Id = %1 ;").arg(sheet_id);
-        QString cmd3 = QString("update sounder_sheet set Sheet_Id = Sheet_Id - 1 where Sheet_Id > %1;").arg(sheet_id);
+        //QString cmd3 = QString("update sounder_sheet set Sheet_Id = Sheet_Id - 1 where Sheet_Id > %1;").arg(sheet_id);
         bool del1 = base_cmd(cmd1);
         bool del2 = base_cmd(cmd2);
-        bool del3 = base_cmd(cmd3);
-        return del1&del2&del3;
+        //bool del3 = base_cmd(cmd3);
+        return del1&del2;
     }
     bool delet_music(int sheet_id, int music_id, QString path)
     {

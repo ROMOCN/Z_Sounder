@@ -1,10 +1,13 @@
 ﻿#include "my_messagebox.h"
 
+#include <QLineEdit>
+#include <QTextEdit>
+
 My_MessageBox::My_MessageBox():btn_close(new My_Btn(this))
 {
     UiInit();
     size_btn = QSize(80,36);
-    content = new QLabel(this);
+    label_content = new QLabel(this);
     f.setBold(true);
     f.setFamily("微软雅黑");
     f.setPointSize(12);
@@ -22,7 +25,7 @@ void My_MessageBox::setKind(My_MessageBox::ENUM_KIND kind)
         ok->setStyleSheet(style);
         ok->move((this->width() - ok->width())/2 , this->height() - ok->height() - 40);
         connect(ok, &My_Btn::clicked, [=](){
-           this->setResult(-1);
+            this->accept();
             this->close();
         });
 
@@ -69,19 +72,50 @@ void My_MessageBox::setKind(My_MessageBox::ENUM_KIND kind)
     {
     }
     break;
+    case KIND_NEW:
+    {
+        My_Btn *ok = new My_Btn(this);
+        ok->setText("接受");
+        ok->resize(size_btn);
+        ok->setStyleSheet(style);
+        ok->move((this->width() - ok->width())/2 , this->height() - ok->height() - 40);
+        connect(ok, &My_Btn::clicked, [=](){
+           this->accept();
+            this->close();
+        });
+        label_content->move((this->width() - label_content->width())/2 , (this->height() - label_content->height())/2 - 50);
+        QLineEdit *edit = new QLineEdit(this);
+        edit->resize(this->width()/3, 14);
+        edit->move((this->width() - edit->width())/2, (this->height() - edit->height())/2 +10);
+        connect(edit, &QLineEdit::textChanged, [=]()
+        {
+            *value = edit->text();
+        });
+
     }
+    break;
+    }
+}
+
+void My_MessageBox::setValue(QString *str)
+{
+    value = str;
 }
 
 void My_MessageBox::setText(QString str)
 {
-    content->setText(str);
-
+    label_content->setText(str);
     QFontMetrics fm(f);
     QRect rec = fm.boundingRect( str);
-    content->resize(rec.width() + 20, rec.height() + 4);
-    content->setFont(f);
-    content->setAlignment(Qt::AlignCenter);
-    content->move((this->width() - content->width())/2 , (this->height() - content->height())/2 - 20);
+    label_content->resize(rec.width() + 20, rec.height() + 4);
+    label_content->setFont(f);
+    label_content->setAlignment(Qt::AlignCenter);
+    label_content->move((this->width() - label_content->width())/2 , (this->height() - label_content->height())/2 - 30);
+}
+
+void My_MessageBox::closeEvent(QCloseEvent *)
+{
+    //this->reject();
 }
 
 

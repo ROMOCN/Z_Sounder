@@ -1,6 +1,7 @@
-#ifndef TOOL_QT_H
+﻿#ifndef TOOL_QT_H
 #define TOOL_QT_H
 
+#include <QDateTime>
 #include <QImage>
 #include <QObject>
 
@@ -25,6 +26,15 @@ namespace TOOL
         return image;
     }
 
+    static QDateTime int_to_time(int t)
+    {
+        return QDateTime::fromTime_t(t);  //时间戳转为日历时间
+    }
+
+    static int time_to_int(QDateTime t)
+    {
+        return t.toTime_t(); //日历时间转为时间戳
+    }
 
 
 }

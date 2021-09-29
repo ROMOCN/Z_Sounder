@@ -8,6 +8,20 @@
 #include <QAction>
 #include <QFile>
 #include <QMouseEvent>
+#include <QDateTime>
+class My_Item :public QListWidgetItem
+{
+public:
+    My_Item(QIcon icon, QString str):QListWidgetItem(icon,str)
+    {
+        setSheetId();
+    }
+    void setSheetId()
+    {
+        Sheet_Id = QDateTime::currentDateTime().toTime_t();
+    }
+    int Sheet_Id = 0;
+};
 class My_ListWidget : public QListWidget
 {
     Q_OBJECT
@@ -23,6 +37,7 @@ signals:
     void signal_selectionChanged(int row);
 private:
     void menuInit();
+
 
 
 };

@@ -11,40 +11,56 @@ Frame_List::Frame_List(QWidget *parent) : QWidget(parent)
     connect(btn_add_music, &My_Btn::clicked, this , &Frame_List::test_add_music);
     connect(list_sheet, &My_ListWidget::currentRowChanged, this, &Frame_List::slot_ListSheetChanged);
     connect(list_music, &My_Table::signal_favorChanged, this, &Frame_List::slot_music_favorChanged);
-    add_sheet("我的收藏", ":/images/unfavor.png");
-    add_sheet("默认歌单", ":/images/sheet2.png");
+    add_sheet("我的收藏", ":/images/unfavor.png", 10000);
+    add_sheet("默认歌单", ":/images/sheet2.png", 10001);
     list_sheet->item(1)->setSelected(true);
     list_sheet->setCurrentRow(1);
-    list_music->set_model(1);
+    list_music->set_model(currentSheet());
 }
 void Frame_List::add_sheet()
-{
-    QPixmap icon(":/images/sheet2.png");
-//    QListWidgetItem *item1 = new QListWidgetItem(QIcon(icon.scaled(QSize(100,100))),"新建歌单");
-//    //item1->setToolTip("歌单");
-//    list_sheet->addItem(item1);
-    add_sheet("新建歌单", ":/images/sheet2.png");
-//    QPushButton *btn = new QPushButton("");
-//    btn->setToolTip("123456789");
+{    
+    My_MessageBox box;
+    QString str = "";
+    box.setText("新建歌单:");
+    box.setValue(&str);
+    box.setKind(My_MessageBox::ENUM_KIND::KIND_NEW);
+    int result = box.exec();
+    if(result == QDialog::Accepted)
+    {
+        add_sheet(str, ":/images/sheet2.png");
+    }
 
-//    list_sheet->setItemWidget(item1,btn);
-//    list_sheet->itemWidget(item1)->setVisible(false);
-//    qDebug()<<list_sheet->itemWidget(list_sheet->item(list_sheet->count() - 1))->toolTip();
 }
 
-void Frame_List::add_sheet(QString name, QString iconPath)
+void Frame_List::add_sheet(QString name, QString iconPath ,int sheetId)
 {
     QPixmap icon(iconPath);
-    QListWidgetItem *item1 = new QListWidgetItem(QIcon(icon.scaled(QSize(100,100))), name);
-    list_sheet->addItem(item1);
-    list_music->add_model(list_sheet->count() - 1);
-    emit signal_sheet_add(list_sheet->count() - 1, name);
+    My_Item *item = new My_Item(QIcon(icon.scaled(QSize(100,100))), name);
+    if(sheetId != 0)
+    {
+        item->Sheet_Id = sheetId;
+    }
+    list_sheet->addItem(item);
+//    list_music->add_model(list_sheet->count() - 1);
+//    emit signal_sheet_add(list_sheet->count() - 1, name);
+    list_music->add_model(item->Sheet_Id);
+    emit signal_sheet_add(item->Sheet_Id, name);
+
 }
 
-void Frame_List::add_sheet(QString name)
+void Frame_List::add_sheet(QString name ,int sheetId)
 {
-    QPixmap icon(":/images/sheet2.png");
-    add_sheet(name, ":/images/sheet2.png");
+    QString path = ":/images/sheet2.png";
+    if(name == "我的收藏" && sheetId == 10000)
+    {
+        path = ":/images/unfavor.png";
+    }
+
+    if(name != "默认歌单" & name != "我的收藏")
+    {
+    }
+    add_sheet(name, path, sheetId);
+
 }
 void Frame_List::add_musicInList(int sheet_id, QString path)
 {
@@ -122,7 +138,7 @@ void Frame_List::add_LotsMusic(QStringList path)
             {
                 Tool_Entity::Music_Entity m_entity = Tool_Entity::Music_Entity(path);
                 qDebug()<< "Music_Entity size:"<<sizeof (QString);
-                add_music(this->list_sheet->currentRow(), 0, false, path);
+                add_music(currentSheet(), 0, false, path);
             }
         }
     });
@@ -147,7 +163,7 @@ void Frame_List::add_LotsMusic(QList<QUrl> urls)
             {
                 Tool_Entity::Music_Entity m_entity = Tool_Entity::Music_Entity(path);
                 qDebug()<< "Music_Entity size:"<<sizeof (QString);
-                add_music(this->list_sheet->currentRow(), 0, false, path);
+                add_music(currentSheet(), 0, false, path);
             }
         }
 
@@ -165,7 +181,7 @@ void Frame_List::delete_music(int sheet_id, int music_id, QString path)
     box.setText("是否从歌单中移除该歌曲?");
     box.setKind(My_MessageBox::ENUM_KIND::KIND_YESON);
     int result = box.exec();
-    if(QDialog::Accepted)
+    if(result == QDialog::Accepted)
     {
         if(sheet_id >= 0 &&music_id>=0)
         {
@@ -180,7 +196,7 @@ void Frame_List::delete_music(int sheet_id, int music_id, QString path)
     }
 }
 
-void Frame_List::delete_sheet(int sheetId)
+void Frame_List::delete_sheet(int row)
 {
     My_MessageBox box;
     box.setText("是否移除该歌单?");
@@ -188,24 +204,15 @@ void Frame_List::delete_sheet(int sheetId)
     int result = box.exec();
     if(QDialog::Accepted)
     {
-        QString str = list_sheet->item(sheetId)->text();
-
-//        std::thread thr([=](){
-//            QListWidgetItem *item = list_sheet->item(sheetId);
-//            //item = list_sheet->takeItem(sheetId);
-//            list_sheet->removeItemWidget(item);
-//            delete item;
-//        },this);
-
-       // list_sheet->update();
-        QListWidgetItem *item = list_sheet->item(sheetId);
+        QString str = list_sheet->item(row)->text();
+        My_Item *item = (My_Item*)list_sheet->item(row);
+        int Sheet_Id = item->Sheet_Id;
         //item = list_sheet->takeItem(sheetId);
         list_sheet->removeItemWidget(item);
         delete item;
-
-        list_music->delete_model(sheetId);
-        list_music->delete_playList(sheetId);
-        emit signal_sheet_delete(sheetId, str);
+        list_music->delete_model(Sheet_Id);
+        list_music->delete_playList(Sheet_Id);
+        emit signal_sheet_delete(Sheet_Id, str);
     }
 
 }
@@ -238,19 +245,19 @@ void Frame_List::slot_readyToPlay(QModelIndex row)
 {
     if (row.isValid())
     {
-        int i = list_sheet->currentRow();
-        QStandardItemModel *model = list_music->get_model(i);
+        int sheetId = currentSheet();
+        QStandardItemModel *model = list_music->get_model(sheetId);
 
 
-         QStandardItem *item =  list_music->get_model(i)->item(row.row(),
-                                list_music->get_model(i)->columnCount() - 1);
-         QStandardItem *item2 = list_music->get_model(i)->itemFromIndex(row); //选中单元格
+         QStandardItem *item =  list_music->get_model(sheetId)->item(row.row(),
+                                list_music->get_model(sheetId)->columnCount() - 1);
+         QStandardItem *item2 = list_music->get_model(sheetId)->itemFromIndex(row); //选中单元格
          QString path = item->text();
          QString pat2h = item2->text();
          //list_music->get_playList(i)->
          //emit signal_music_play(item->text());
          //emit signal_list_set(list_music->get_playList(i));
-         QMediaPlaylist *list = list_music->get_playList(i);
+         QMediaPlaylist *list = list_music->get_playList(sheetId);
 
          QMediaPlaylist *l = new QMediaPlaylist(list_music);
 
@@ -282,30 +289,30 @@ void Frame_List::slot_readtToDelete(QModelIndex row)
 {
 
     QString path = list_music->get_model(currentSheet())->item(row.row(), 6)->text();
-    delete_music(list_sheet->currentRow(), row.row(),path);
+    delete_music(currentSheet(), row.row(),path);
 }
 
 void Frame_List::slot_music_favorChanged(bool favor, int music_id)
 {
     QString favorPath = "";
-    favorPath = list_music->get_model(list_sheet->currentRow())->item(music_id, 6)->text();
-    int favorFrom = list_sheet->currentRow();
+    favorPath = list_music->get_model(currentSheet())->item(music_id, 6)->text();
+    int favorFrom = currentSheet();
     if(favor)
     {
-        add_music(0, favorFrom, favor, favorPath);
+        add_music(10000, favorFrom, favor, favorPath);
     }else
     {
         //删除收藏歌单的DB数据
-        emit signal_music_delete(0, music_id, favorPath);
+        emit signal_music_delete(10000, music_id, favorPath);
         //获取收藏歌单的内容
-        QStandardItemModel *model  = list_music->get_model(0);
+        QStandardItemModel *model  = list_music->get_model(10000);
         //收藏列表取消收藏，关联歌单对应歌曲取消收藏
         //set_musicUnfavor(sheet, music, path);
         //如果被修改的是收藏歌单内的歌曲则，在其他歌单中的对应歌曲修改收藏状态
-        if(list_sheet->currentRow() == 0 && model->rowCount() > 0)
+        if(currentSheet() == 10000 && model->rowCount() > 0)
         {
             int sourceSheet = model->item(music_id, 7)->text().toInt();
-            if(sourceSheet >0)
+            if(sourceSheet >10000)
             {
                 QStandardItemModel *model  = list_music->get_model(sourceSheet);
                 if(model->findItems(favorPath, Qt::MatchWildcard, 6).size() > 0)
@@ -331,15 +338,15 @@ void Frame_List::slot_music_favorChanged(bool favor, int music_id)
                 }
         }
     }
-    emit signal_music_favorChanged(favor, current_sheet, music_id, favorPath);
+    emit signal_music_favorChanged(favor, currentSheet(), music_id, favorPath);
 }
 
 
 void Frame_List::slot_ListSheetChanged(int row)
 {
-     current_sheet = row;
      list_music->setModel(NULL);
-     list_music->set_model(row);
+     if(currentSheet() >= 10000)
+        list_music->set_model(currentSheet());
     list_music->setColumnWidth(0,60);
     list_music->setColumnWidth(1,20);
     list_music->setColumnWidth(2,300);
@@ -416,30 +423,30 @@ void Frame_List::paintEvent(QPaintEvent *event)
 //        p.drawRect(0, 0, this->width(), this->height());
 //        p.save();
 
-//    if(list_music->model()!=NULL)
-//    {
-//        if(list_music->model()->rowCount() == 0)
-//        {
-//            list_music->setVisible(false);
-//            QPainter paint(this);
-//            QPen pen = QPen(QColor(255,255,255),14,Qt::SolidLine); //211,220,213 //233,195,130
-//            paint.save();
-//            paint.setPen(pen);
-//            QString str = "点击按钮或拖动添加歌曲";
-//            QFont f;
-//            f.setUnderline(true);
-//            f.setFamily("微软雅黑");
-//            f.setPointSize(20);
-//            QFontMetrics fm(f);
-//            QRect rec = fm.boundingRect( str);
-//            paint.drawText(back_music->x() + (back_music->width() - rec.width())/2,back_music->y() + (back_music->height()/2) + 100,str);
+    if(list_music->model()!=nullptr)
+    {
+        if(list_music->model()->rowCount() == 0)
+        {
+            list_music->setVisible(false);
+            QPainter paint(this);
+            QPen pen = QPen(QColor(255,255,255),14,Qt::SolidLine); //211,220,213 //233,195,130
+            paint.save();
+            paint.setPen(pen);
+            QString str = "点击按钮或拖动添加歌曲";
+            QFont f;
+            f.setUnderline(true);
+            f.setFamily("微软雅黑");
+            f.setPointSize(20);
+            QFontMetrics fm(f);
+            QRect rec = fm.boundingRect( str);
+            paint.drawText(back_music->x() + (back_music->width() - rec.width())/2,back_music->y() + (back_music->height()/2) + 100,str);
 
-//        }
-//        else
-//        {
-//            list_music->setVisible(true);
-//        }
-//    }
+        }
+        else
+        {
+            list_music->setVisible(true);
+        }
+    }
 
 }
 void Frame_List::UI_Init()
