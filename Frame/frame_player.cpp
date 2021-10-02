@@ -54,6 +54,8 @@ void Frame_Player::UI_Init()
     btn_next->resize(20,20);
     btn_next->set_img_formal(":/images/next.png");
 
+    btn_mode = new My_BtnPlanMode(this);
+    btn_mode->resize(30,20);
 
 //    picture = new My_Btn(this);
 //    picture->resize(40,40);
@@ -95,6 +97,11 @@ void Frame_Player::Signal_Init()
     connect(btn_before, &My_Btn::clicked, this, &Frame_Player::Previous);
     connect(btn_next, &My_Btn::clicked, this, &Frame_Player::Next);
     connect(music, &Tool_Music_Qt::Signal_MediaChanged, this, &Frame_Player::slot_currentMediaChanged);
+    connect(btn_mode, &My_BtnPlanMode::signal_modeChanged, [=](int mode){
+        //QMediaPlaylist::Loop
+        _list->setPlaybackMode((QMediaPlaylist::PlaybackMode)mode);
+
+    });
 }
 
 void Frame_Player::resizeEvent(QResizeEvent *event)
@@ -104,12 +111,15 @@ void Frame_Player::resizeEvent(QResizeEvent *event)
     btn_play->move( (this->width() - btn_play->width())/2 , slider->y() - btn_play->height() - 10);
     btn_before->move(btn_play->x() -  btn_before->width() - 40, btn_play->y() + 5);
     btn_next->move(btn_play->x() + btn_play->width() + 40 , btn_play->y() + 5);
-
     num_current->move(slider->x() - num_current->width() - 20, slider->y());
     num_len->move(slider->x() + slider->width() + 20, slider->y());
 
     label_curTitle->move(20, (this->height()/2) - label_curTitle->height() + 10);
     label_curPerFormer->move(20, this->height()/2 + 10);
+
+    box->move(this->width() - box->width() - 40, (this->height() - box->height()) - 10);
+    btn_mode->move(box->x() - btn_mode->width() - 100, (this->height() - box->height()) - 10);
+
 
 }
 void Frame_Player::Init(QString path)
@@ -166,7 +176,6 @@ void Frame_Player::play_list(QMediaPlaylist *list, int musicId)
     _list = nullptr;
     this->_list = list;
     music->Music_SetList(list);
-    _list->setPlaybackMode(QMediaPlaylist::Loop);
     _list->setCurrentIndex(musicId);
     int i = _list->mediaCount();
     this->Play();
@@ -182,7 +191,7 @@ void Frame_Player::play_list(QMediaPlaylist *list, int musicId)
 int Frame_Player::Music_Thread()
 {
     QString tempPath = "";
-    while(music->status != -1)
+    while(music!=nullptr&&music->status != -1)
     {
         if(music->status == 1)
         {

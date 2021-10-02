@@ -123,30 +123,30 @@ bool Frame_List::add_music(int sheet_id, int favorFrom ,bool favor, QString path
     return true;
 }
 
-void Frame_List::add_LotsMusic(QStringList path)
-{
-    if(path.isEmpty())
-        return ;
-    list_music->setUpdatesEnabled(false);  //暂停界面刷新
-    std::thread thr([=]()
-    {
-        for(auto url : path)
-        {
-            QString path = url;
-            QString format = path.mid( path.lastIndexOf('.') + 1, path.length() - path.lastIndexOf('.'));
-            if(format == "mp3")
-            {
-                Tool_Entity::Music_Entity m_entity = Tool_Entity::Music_Entity(path);
-                qDebug()<< "Music_Entity size:"<<sizeof (QString);
-                add_music(currentSheet(), 0, false, path);
-            }
-        }
-    });
-    thr.detach();
-    list_music->setUpdatesEnabled(true);  //界面刷新
+//void Frame_List::add_LotsMusic(QStringList path)
+//{
+//    if(path.isEmpty())
+//        return ;
+//    list_music->setUpdatesEnabled(false);  //暂停界面刷新
+//    std::thread thr([=]()
+//    {
+//        for(auto url : path)
+//        {
+//            QString path = url;
+//            QString format = path.mid( path.lastIndexOf('.') + 1, path.length() - path.lastIndexOf('.'));
+//            if(format == "mp3")
+//            {
+//                Tool_Entity::Music_Entity m_entity = Tool_Entity::Music_Entity(path);
+//                qDebug()<< "Music_Entity size:"<<sizeof (QString);
+//                add_music(currentSheet(), 0, false, path);
+//            }
+//        }
+//    });
+//    thr.detach();
+//    list_music->setUpdatesEnabled(true);  //界面刷新
 
 
-}
+//}
 
 void Frame_List::add_LotsMusic(QList<QUrl> urls)
 {
@@ -223,8 +223,20 @@ void Frame_List::delete_musicFromFavor(int sheet_id, int music_id, QString path)
 
 }
 
-void Frame_List::update_sheet(int sheetId)
+void Frame_List::update_sheet()
 {
+    My_MessageBox box;
+    QString str = "";
+    box.setText("歌单修改为:");
+    box.setValue(&str);
+    box.setKind(My_MessageBox::ENUM_KIND::KIND_NEW);
+    int result = box.exec();
+    if(result == QDialog::Accepted)
+    {
+        signal_sheet_update(currentSheet(), str);
+        list_sheet->currentItem()->setText(str);
+    }
+
 
 }
 
@@ -257,18 +269,13 @@ void Frame_List::slot_readyToPlay(QModelIndex row)
          //list_music->get_playList(i)->
          //emit signal_music_play(item->text());
          //emit signal_list_set(list_music->get_playList(i));
-         QMediaPlaylist *list = list_music->get_playList(sheetId);
-
          QMediaPlaylist *l = new QMediaPlaylist(list_music);
 
          for(int i = 0; i< model->rowCount(); i++)
          {
             QString str =  model->item(i, 6)->text();
-            QString lis =  list->media(row.row()).canonicalUrl().toString();
             l->addMedia(QMediaContent(str));
          }
-         list = nullptr;
-         list = l;
 //         QFile file("plist.m3u");
 //         file.open(QIODevice::WriteOnly);
 //         list->save(&file,"m3u");
@@ -572,6 +579,10 @@ void Frame_List::Menu_Init()
     connect(act_delete,&QAction::triggered,[=]()
     {
         delete_sheet(list_sheet->currentRow());
+    });
+    connect(act_edit,&QAction::triggered,[=]()
+    {
+        update_sheet();
     });
     connect(list_music, &My_Table::customContextMenuRequested, [=](const QPoint& pos)
     {

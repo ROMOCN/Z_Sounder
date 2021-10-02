@@ -17,6 +17,7 @@
 #include <QPainter>
 #include <QPaintEvent>
 #include "Tools/tool_entity.h"
+#include "Controls/my_btnplanmode.h"
 #ifndef MUSIC_DOCK
 #define MUSIC_DOCK 100
 #endif
@@ -25,10 +26,22 @@ class Frame_Player : public QWidget
     Q_OBJECT
     Tool_Entity::Music_Entity _entity;
     QMediaPlaylist *_list = new QMediaPlaylist(this);
+    My_Btn *btn_play, *btn_stop, *btn_front, *btn_reverse, *btn_before, *btn_next;
+    My_BtnPlanMode *btn_mode;
+    My_Slider * slider;
+    std::thread *thread_MInfo;
+    Tool_Music_Qt *music;
+    QDoubleSpinBox *box;
+    QLabel *num_current, *num_len, *label_curTitle, *label_curPerFormer;
+    My_Btn *picture;
+    bool press_slider = false;
+
 public:
     explicit Frame_Player(QWidget *parent = nullptr);
     ~Frame_Player()
     {
+        delete music;
+        music = nullptr;
         qDebug()<<"~Frame_Player";
     }
     void Init(QString path);
@@ -52,14 +65,6 @@ private:
     int Music_Thread();
     void UI_Init();
     void Signal_Init();
-    My_Btn *btn_play, *btn_stop, *btn_front, *btn_reverse, *btn_before, *btn_next;
-    My_Slider * slider;
-    std::thread *thread_MInfo;
-    Tool_Music_Qt *music;
-    QDoubleSpinBox *box;
-    QLabel *num_current, *num_len, *label_curTitle, *label_curPerFormer;
-    My_Btn *picture;
-    bool press_slider = false;
     void resizeEvent(QResizeEvent *event) override;
     void dragMoveEvent(QDragMoveEvent *event) override;
     void dragLeaveEvent(QDragLeaveEvent *event) override;

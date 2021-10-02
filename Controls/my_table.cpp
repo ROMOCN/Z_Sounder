@@ -3,7 +3,7 @@
 #include <QAbstractItemView>
 #include <QPainter>
 
-My_Table::My_Table(QWidget *parent) :QTableView(parent), _delegateBtn(new My_DelegateBtn(this))
+My_Table::My_Table(QWidget *parent) :QTableView(parent)
 {
     //this->setItemDelegateForColumn(1, _delegateBtn);
     ui_init();
@@ -12,7 +12,6 @@ My_Table::My_Table(QWidget *parent) :QTableView(parent), _delegateBtn(new My_Del
     this->viewport()->installEventFilter(this);
     this->viewport()->setMouseTracking(true);
     connect(this, SIGNAL(clicked(const QModelIndex &index)), this, SLOT(itemClicked(const QModelIndex &index)));
-    connect(this, SIGNAL(clicked(const QModelIndex &index)), _delegateBtn, SLOT(slot_rowClicked(const QModelIndex &index)));
     menuInit();
 }
 void My_Table::add_List(int sheetId)

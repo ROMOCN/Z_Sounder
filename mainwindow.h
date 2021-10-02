@@ -37,6 +37,7 @@ public:
     ~MainWindow();
     bool isclose = false;
 
+    void icon_init();
 public slots:
     void play(QString path);
     void slot_music_add(int sheet,  int musicid,int favorFrom, bool favor, QString title, QString performer, QString duration, QString album,QString len, QString path);

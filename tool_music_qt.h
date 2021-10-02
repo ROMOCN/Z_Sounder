@@ -13,8 +13,8 @@ public:
     explicit Tool_Music_Qt(QObject *parent = nullptr);
     ~Tool_Music_Qt()
     {
+        this->status = -1;
         qDebug()<<"~Tool_Music_Qt";
-
     }
     QMediaContent Music_Data()
     {

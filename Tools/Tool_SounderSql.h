@@ -119,10 +119,10 @@ public:
         return base_cmd(cmd)&del;
     }
 
-    bool updateSheetName(int sheet_id, QString newName)
+    void updateSheetName(int sheet_id, QString newName)
     {
-        QString cmd = QString("delete from sounder_sheet where SheetId = %1 ;").arg(sheet_id);
-        return base_cmd(cmd);
+        QString cmd = QString("update sounder_sheet set Sheet_Name = \"%1\" where Sheet_Id = %2 ;").arg(newName).arg(sheet_id);
+        base_cmd(cmd);
     }
     bool add_music(int sheet,  int musicid,
                    QString title, QString performer,

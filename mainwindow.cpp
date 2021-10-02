@@ -3,6 +3,7 @@
 #include <QDebug>
 #include <QPainter>
 #include <QScreen>
+#include <QSystemTrayIcon>
 #include <thread>
 MainWindow::MainWindow(QWidget *parent)
     : QWidget(parent)
@@ -54,7 +55,10 @@ MainWindow::MainWindow(QWidget *parent)
     connect(_list, &Frame_List::signal_sheet_delete, this ,&MainWindow::slot_sheet_delete);
     ui->setupUi(this);
     dbInit();
-
+    connect(_list, &Frame_List::signal_sheet_update,  [=](int sheet, QString name){
+        this->sql.updateSheetName(sheet, name);
+    });
+    icon_init();
 }
 
 MainWindow::~MainWindow()
@@ -63,7 +67,20 @@ MainWindow::~MainWindow()
     qDebug()<<"~MainWindow";
     delete ui;
 }
+void MainWindow::icon_init()
+{
+    if (!QSystemTrayIcon::isSystemTrayAvailable())      //判断系统是否支持系统托盘图标
+    {
+        return;
+    }
+    QSystemTrayIcon *_myIcon = new QSystemTrayIcon(this);
+    _myIcon->setIcon(QIcon(":/imgs/myIcon64.ico"));   //设置图标图片
 
+    _myIcon->setToolTip("Z_Sounder V1.0");    //托盘时，鼠标放上去的提示信息
+    _myIcon->showMessage("SystemTrayIcon","Hi,This is my trayIcon",QSystemTrayIcon::Information,10000);
+   // _myIcon->setContextMenu(_myMenu);     //设置托盘上下文菜单
+    _myIcon->show();
+}
 void MainWindow::read_musicInfoFromDB()
 {
 

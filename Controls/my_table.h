@@ -14,7 +14,6 @@
 #include <QMenu>
 #include <QMediaPlaylist>
 #include "QMouseEvent"
-#include "Controls/my_delegatebtn.h"
 class My_Table : public QTableView
 {
     Q_OBJECT
@@ -25,7 +24,6 @@ class My_Table : public QTableView
                           "font:20px;color:rgb(255,255,255);}";
     std::map<int , QStandardItemModel*> _models;
     std::map<int , QMediaPlaylist*> _playlists;
-    My_DelegateBtn * _delegateBtn;
     int currentModelId = 0;
 
 public:

@@ -68,8 +68,6 @@ private:
     {
         while( isclose == false )
         {
-            //qDebug()<<"berth running";
-
             if(!press_mouse && father->size() != father->maximumSize())
             {
 

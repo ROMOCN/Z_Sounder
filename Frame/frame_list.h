@@ -11,7 +11,6 @@
 #include "Controls/my_table.h"
 #include "Controls/my_favorbtn.h"
 #include "Tools/tool_entity.h"
-#include "Controls/my_delegatebtn.h"
 #include "Controls/my_messagebox.h"
 
 
@@ -20,7 +19,6 @@ class Frame_List : public QWidget
 {
     Q_OBJECT
     QMediaPlaylist *_list;
-    My_DelegateBtn * _dbtn;
     QMenu *menu_music;
     QMenu *menu_sheet;
 
@@ -38,13 +36,13 @@ public:
     //void add_music(QString path);
     bool add_music(int sheet_id, int favorFrom ,bool favor, QString title, QString performer, QString album, QString duration, QString path);
     bool add_music(int sheet_id, int favorFrom , bool favor,QString path);
-    void add_LotsMusic(QStringList path);
+//    void add_LotsMusic(QStringList path);
     void add_LotsMusic(QList<QUrl> path);
     void add_musicInList(int sheet, QString path);
     void delete_music(int sheet_id, int music_id, QString path);
     void delete_sheet(int sheetId);
     void delete_musicFromFavor(int sheet_id, int music_id, QString path);
-    void update_sheet(int sheetId);
+    void update_sheet();
     void test_add_music();
     void slot_add_music(QString path);
     void slot_readyToPlay(QModelIndex);
@@ -59,6 +57,7 @@ signals:
      void signal_sheet_add(int id, QString name);
      void signal_sheet_delete(int id, QString name);
      void signal_sheet_move(int source, int dest);
+     void signal_sheet_update(int sheetId, QString newName);
      //signal about music
      void signal_music_add(int sheet, int musicid, int favorFrom ,bool favor, QString title, QString performer, QString duration, QString album,QString len, QString path);
      void signal_music_play(QString path);
