@@ -17,6 +17,7 @@ public:
         father = parent;
         thread_Graphic =new std::thread(&Tool_Berth::Thread_Graphic,this);
         thread_Graphic->detach();
+
     }
     Tool_Berth(bool &close, QWidget *parent): QWidget(parent)
     {
@@ -47,10 +48,15 @@ public:
     void leaveEvent(QEvent *event)
     {
         press_mouse = false;
-        if(widget_state == 1)
+        if(widget_state == 1 &&father->size() == minsize)
         {
             father->setVisible(false);
             widget_state = 2;
+        }else if(widget_state == 1 &&father->size() != minsize)
+        {
+            widget_state = 0;
+            father->setVisible(true);
+
         }
     }
     void Close()
@@ -62,21 +68,22 @@ private:
     QWidget *father;
     std::thread *thread_Graphic;
     bool press_mouse = false;
-    int widget_state = 0;  //0：不停靠； 1：在边缘； 2：在外侧
-    bool start_graphic = false;
+    int widget_state = 0;  //0：不停靠； 1：窗口停靠在边缘； 2：窗口在屏幕外侧
+    QSize minsize = QSize(680, 120);
+
     int Thread_Graphic()
     {
+
         while( isclose == false )
         {
-            if(!press_mouse && father->size() != father->maximumSize())
+            if(!press_mouse &&father->size() == minsize)
             {
 
                 {
-                    QPoint pos_mouse = QCursor::pos();
-                    QPoint pos_widget = this->parentWidget()->pos();
+                    QPoint pos_mouse = QCursor::pos();//鼠标坐标
+                    QPoint pos_widget = this->parentWidget()->pos();//窗口坐标
                     //QPoint pos_widget = father->pos();
-                    //qDebug()<<"father:"<< pos_widget;
-                    QScreen *screen = QGuiApplication::primaryScreen ();
+                    QScreen *screen = QGuiApplication::primaryScreen ();//屏幕大小
                     QRect mm=screen->availableGeometry() ;
                     int screen_width = mm.width();
                     //int screen_height = mm.height();
@@ -85,7 +92,6 @@ private:
                         if(father->isVisible())
                         {
                             father->move(  (screen_width - father->width())/2 ,0);
-                            start_graphic = true;
                             widget_state = 1;
                         }
                         else
@@ -97,7 +103,7 @@ private:
                     {
                         widget_state = 0;
                     }
-
+                    //鼠标贴近边缘显示窗口
                     if(pos_mouse.y() == 0 && widget_state == 2)
                     {
                         father->setVisible(true);
@@ -105,6 +111,11 @@ private:
                     }
                 }
             }
+
+//            if(father->size() != minsize && father->isVisible() == false)
+//            {
+//                father->setVisible(true);
+//            }
 
             std::this_thread::sleep_for(std::chrono::milliseconds(100));
         }

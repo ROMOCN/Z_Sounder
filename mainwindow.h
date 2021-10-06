@@ -7,12 +7,10 @@
 #include <QPushButton>
 #include <QSlider>
 #include <thread>
-#include <tool_music.h>
-#include "tool_music_qt.h"
 #include "Controls/my_slider.h"
 #include "Controls/my_btn.h"
 #include <QDoubleSpinBox>
-#include "Tools/Tool_MoveWidget.h"
+#include "Tools/Tool_Move.h"
 #include "Tools/Tool_Berth.h"
 #include "Tools/Tool_SounderSql.h"
 #include "Frame/frame_player.h"
@@ -35,6 +33,8 @@ class MainWindow : public QWidget
 public:
     MainWindow(QWidget *parent = nullptr);
     ~MainWindow();
+    QVector<QSize> sizes;
+
     bool isclose = false;
 
     void icon_init();
@@ -50,19 +50,21 @@ public slots:
 
 private:
     Ui::MainWindow *ui;
-    Tool_MoveWidget *_move;
+    Tool_Move *_move;
     Tool_Berth *_berth;
     Frame_Player *_player;
     Frame_List *_list;
-    My_Btn *btn_close;
+    My_Btn *btn_close, *btn_size,*btn_mini;
     void read_musicInfoFromDB();
     void dbInit();
     void  thread_readData();
     void db_addDefaultSheet();
+    void sizeState(int state);
     void paintEvent(QPaintEvent *event) override;
     void mousePressEvent(QMouseEvent *event) override;
     void mouseReleaseEvent(QMouseEvent *event) override;
     void mouseMoveEvent(QMouseEvent *event) override;
+    void mouseDoubleClickEvent(QMouseEvent *event) override;
     void leaveEvent(QEvent *event) override;
     void resizeEvent(QResizeEvent *event) override;
     void closeEvent(QCloseEvent *event) override;

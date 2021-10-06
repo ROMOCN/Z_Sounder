@@ -6,7 +6,6 @@
 #include <QObject>
 #include <QWidget>
 #include <thread>
-#include <tool_music_qt.h>
 #include <Controls/my_btn.h>
 #include <Controls/my_slider.h>
 #include <Tools/Tool_Qt.h>
@@ -18,30 +17,32 @@
 #include <QPaintEvent>
 #include "Tools/tool_entity.h"
 #include "Controls/my_btnplanmode.h"
+#include <QMediaPlayer>
 #ifndef MUSIC_DOCK
 #define MUSIC_DOCK 100
 #endif
 class Frame_Player : public QWidget
 {
     Q_OBJECT
-    Tool_Entity::Music_Entity _entity;
     QMediaPlaylist *_list = new QMediaPlaylist(this);
     My_Btn *btn_play, *btn_stop, *btn_front, *btn_reverse, *btn_before, *btn_next;
     My_BtnPlanMode *btn_mode;
     My_Slider * slider;
     std::thread *thread_MInfo;
-    Tool_Music_Qt *music;
+    QMediaPlayer *player;
     QDoubleSpinBox *box;
     QLabel *num_current, *num_len, *label_curTitle, *label_curPerFormer;
     My_Btn *picture;
     bool press_slider = false;
-
+    bool close = false;
+    QVector<QSize> sizes;
 public:
     explicit Frame_Player(QWidget *parent = nullptr);
     ~Frame_Player()
     {
-        delete music;
-        music = nullptr;
+        delete player;
+        player = nullptr;
+        close = true;
         qDebug()<<"~Frame_Player";
     }
     void Init(QString path);
@@ -49,6 +50,8 @@ public:
     void Stop();
     void Next();
     void Previous();
+    void set_time(int time, QLabel &label);
+    void set_Size(int size);
     void set_list(QMediaPlaylist *list);
     void play_list(QMediaPlaylist* list, int musicId);
     void slot_set_len(qint64 len);
@@ -56,8 +59,6 @@ public:
     void slot_slider_release();
     void slot_state_change(qint64 state);
     void slot_rate_change(double value);
-
-    void set_time(int time, QLabel &label);
     void slot_currentMediaChanged(QMediaContent );
 signals:
     void signal_add_music(QString path);
@@ -71,6 +72,8 @@ private:
     void dragEnterEvent(QDragEnterEvent *event) override;
     void dropEvent(QDropEvent *event) override;
     void paintEvent(QPaintEvent *event) override;
+    void mouseDoubleClickEvent(QMouseEvent *event) override;
+
 
 };
 

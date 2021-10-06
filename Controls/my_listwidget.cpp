@@ -6,8 +6,14 @@ My_ListWidget::My_ListWidget(QWidget *parent):QListWidget(parent)
     this->setVerticalScrollMode(ScrollMode::ScrollPerItem);
     this->setStyleSheet("background-color:transparent;font:22px;font-color:rgba(255,255,255,200);");
     this->setFrameShape(QListWidget::NoFrame);
+
     menuInit();
     connect(this, &My_ListWidget::itemClicked, this, &My_ListWidget::slot_itemClick);
+    connect(this, &My_ListWidget::itemEntered, this, &My_ListWidget::slot_itemEntered);
+//    QString style = "QListWidget::item:hover{color:rgb(255,255,255);}"
+//    "QListWidget::item::selected:active{color:white;border-width:0;}";
+//    this->setStyleSheet(style);
+
 }
 
 My_ListWidget::My_ListWidget(My_ListWidget *list, QWidget *parent):QListWidget(parent)
@@ -19,7 +25,7 @@ My_ListWidget::My_ListWidget(My_ListWidget *list, QWidget *parent):QListWidget(p
     this->setFrameShape(QListWidget::NoFrame);
     menuInit();
     connect(this, &My_ListWidget::itemClicked, this, &My_ListWidget::slot_itemClick);
-
+    connect(this, &My_ListWidget::itemEntered, this, &My_ListWidget::slot_itemEntered);
     Init(list);
 }
 
@@ -34,6 +40,11 @@ void My_ListWidget::Init(My_ListWidget *list)
          QString str = item->text();
          this->addItem(item);
     }
+}
+
+void My_ListWidget::slot_itemEntered(QListWidgetItem *item)
+{
+
 }
 
 void My_ListWidget::slot_itemClick(QListWidgetItem *item)

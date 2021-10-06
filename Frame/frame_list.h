@@ -12,7 +12,10 @@
 #include "Controls/my_favorbtn.h"
 #include "Tools/tool_entity.h"
 #include "Controls/my_messagebox.h"
-
+#include <QFileDialog>
+#include <QPainter>
+#include <QWidgetAction>
+#include <thread>
 
 
 class Frame_List : public QWidget
@@ -38,6 +41,7 @@ public:
     bool add_music(int sheet_id, int favorFrom , bool favor,QString path);
 //    void add_LotsMusic(QStringList path);
     void add_LotsMusic(QList<QUrl> path);
+    void add_LotsMusic(QStringList path);
     void add_musicInList(int sheet, QString path);
     void delete_music(int sheet_id, int music_id, QString path);
     void delete_sheet(int sheetId);
@@ -51,7 +55,7 @@ public:
     void mousePressEvent(QMouseEvent *event)override;
     void mouseReleaseEvent(QMouseEvent *event)override;
     void mouseMoveEvent(QMouseEvent *event)override;
-
+    void mouseDoubleClickEvent(QMouseEvent *event) override;
 signals:
      //signal about sheet
      void signal_sheet_add(int id, QString name);
@@ -82,7 +86,6 @@ private:
         void Menu_Init();
         void paintEvent(QPaintEvent *event) override;
         void resizeEvent(QResizeEvent *event) override;
-        void mouseDoubleClickEvent(QMouseEvent *event) override;
         QString stringHandle(QString str);
 };
 

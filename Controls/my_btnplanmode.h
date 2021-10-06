@@ -12,7 +12,7 @@ class My_BtnPlanMode : public My_Btn
     map_listloop,//列表循环
     map_random; //随机播放
     QList<QPixmap> maps;
-    int currentMode = 1;
+    int currentMode = 0;
 public:
     My_BtnPlanMode(QWidget *parent = nullptr);
     void mousePressEvent(QMouseEvent *event) override;

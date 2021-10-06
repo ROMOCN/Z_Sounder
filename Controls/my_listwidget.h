@@ -21,6 +21,7 @@ public:
         Sheet_Id = QDateTime::currentDateTime().toTime_t();
     }
     int Sheet_Id = 0;
+
 };
 class My_ListWidget : public QListWidget
 {
@@ -29,15 +30,15 @@ public:
     My_ListWidget(QWidget *parent = nullptr);
     My_ListWidget(My_ListWidget *list, QWidget *parent = nullptr);
     void Init(My_ListWidget *list);
-
+    void slot_itemEntered(QListWidgetItem *item);
 
 public slots:
     void slot_itemClick(QListWidgetItem *item);
+
 signals:
     void signal_selectionChanged(int row);
 private:
     void menuInit();
-
 
 
 };

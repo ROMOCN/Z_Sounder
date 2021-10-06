@@ -1,5 +1,6 @@
 ﻿#include "frame_list.h"
 
+#include <QFileDialog>
 #include <QPainter>
 #include <QWidgetAction>
 #include <thread>
@@ -36,13 +37,12 @@ void Frame_List::add_sheet(QString name, QString iconPath ,int sheetId)
 {
     QPixmap icon(iconPath);
     My_Item *item = new My_Item(QIcon(icon.scaled(QSize(100,100))), name);
+    item->setSizeHint(QSize(list_sheet->width() - 8, 38));
     if(sheetId != 0)
     {
         item->Sheet_Id = sheetId;
     }
     list_sheet->addItem(item);
-//    list_music->add_model(list_sheet->count() - 1);
-//    emit signal_sheet_add(list_sheet->count() - 1, name);
     list_music->add_model(item->Sheet_Id);
     emit signal_sheet_add(item->Sheet_Id, name);
 
@@ -116,6 +116,19 @@ bool Frame_List::add_music(int sheet_id, int favorFrom ,bool favor, QString path
         favor = true;
 
     Tool_Entity::Music_Entity music = Tool_Entity::Music_Entity(path);
+    if(music.Title == "")
+    {
+        int index1 = path.lastIndexOf('/');
+        int index2 = path.lastIndexOf('.');
+        int len = path.size();
+        QString t = path.mid(index1 + 1 ,index2 - 1 - index1);
+        music.Title = t;
+    }
+    if(music.Performer == "")
+        music.Performer = "未知";
+    if(music.Album == "")
+        music.Album = "未知";
+
     int rowCount = list_music->get_model(sheet_id)==NULL?0 : list_music->get_model(sheet_id)->rowCount();
     emit signal_music_add(sheet_id,  rowCount,favorFrom, favor, music.Title,music.Performer, music.Album ,music.Duration, music.FileSize, music.Path);
     add_music(sheet_id, favorFrom, favor, music.Title,music.Performer,  music.Album, music.Duration,music.Path);
@@ -161,7 +174,32 @@ void Frame_List::add_LotsMusic(QList<QUrl> urls)
             QString format = path.mid( path.lastIndexOf('.') + 1, path.length() - path.lastIndexOf('.'));
             if(format == "mp3")
             {
-                Tool_Entity::Music_Entity m_entity = Tool_Entity::Music_Entity(path);
+                //Tool_Entity::Music_Entity m_entity = Tool_Entity::Music_Entity(path);
+                qDebug()<< "Music_Entity size:"<<sizeof (QString);
+                add_music(currentSheet(), 0, false, path);
+            }
+        }
+
+    });
+    thr.detach();
+    list_music->setUpdatesEnabled(true);  //界面刷新
+
+}
+
+void Frame_List::add_LotsMusic(QStringList urls)
+{
+    if(urls.isEmpty())
+        return ;
+    list_music->setUpdatesEnabled(false);  //暂停界面刷新
+    std::thread thr([=]()
+    {
+        for(auto url : urls)
+        {
+            QString path = url;
+            QString format = path.mid( path.lastIndexOf('.') + 1, path.length() - path.lastIndexOf('.'));
+            if(format == "mp3")
+            {
+                //Tool_Entity::Music_Entity m_entity = Tool_Entity::Music_Entity(path);
                 qDebug()<< "Music_Entity size:"<<sizeof (QString);
                 add_music(currentSheet(), 0, false, path);
             }
@@ -244,7 +282,10 @@ void Frame_List::update_sheet()
 
 void Frame_List::test_add_music()
 {
-
+    QFileDialog f;
+    f.setDefaultSuffix("mp3");
+    QList<QUrl> m = f.getOpenFileUrls();
+    add_LotsMusic(m);
 }
 
 void Frame_List::slot_add_music(QString path)
@@ -621,5 +662,5 @@ void Frame_List::mouseReleaseEvent(QMouseEvent *event)
 
 void Frame_List::mouseDoubleClickEvent(QMouseEvent *event)
 {
-    event->ignore();
+    event->accept();
 }

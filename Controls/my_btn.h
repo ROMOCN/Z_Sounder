@@ -87,6 +87,7 @@ private:
     void mouseMoveEvent(QMouseEvent*event);
     void mouseReleaseEvent(QMouseEvent*event);
 
+
     void keyPressEvent(QKeyEvent *event);
     void leaveEvent(QEvent *event);
     void clickHappen(QMouseEvent*event);

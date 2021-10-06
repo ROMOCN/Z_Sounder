@@ -14,6 +14,7 @@ MainWindow::MainWindow(QWidget *parent)
     flags = (Qt::FramelessWindowHint);
     this->setAcceptDrops(true);
     this->setWindowOpacity(1);
+    this->setObjectName("Z_Sounder");
     this->setWindowFlags(flags);
     //this->resize(600,160);
     this->resize(1400,920);
@@ -27,8 +28,12 @@ MainWindow::MainWindow(QWidget *parent)
     //this->setMinimumSize(600,160);
     isclose = false;
 
+    sizes.append(QSize(680, 120));
+    sizes.append(QSize(1400,920));
+    sizes.append(mm.size());
+
     _player = new Frame_Player(this);
-    _move = new Tool_MoveWidget(this);
+    _move = new Tool_Move(this);
     _berth =new Tool_Berth(this->isclose, this);
     //player->move(10,10);
     _player->move(this->width() - _player->width() - 10,this->height() - this->_player->height() - 10);
@@ -39,8 +44,17 @@ MainWindow::MainWindow(QWidget *parent)
     btn_close = new My_Btn(this);
     btn_close->resize(20,20);
     btn_close->set_img_formal(":/images/close_black.png");
-    btn_close->move(this->width() - 30 - btn_close->width(), 20);
+    btn_close->move(this->width() - 30 - btn_close->width(), 30);
 
+    btn_size = new My_Btn(this);
+    btn_size->resize(20,20);
+    btn_size->set_img_formal(":/images/sizeFormal.png");
+    btn_size->move(btn_close->x() - 30 - btn_size->width(), 30);
+
+    btn_mini = new My_Btn(this);
+    btn_mini->resize(20,20);
+    btn_mini->set_img_formal(":/images/sizeMini.png");
+    btn_mini->move(btn_size->x() - 30 - btn_mini->width(), 30);
 
     connect(_player, &Frame_Player::signal_add_music, _list, &Frame_List::slot_add_music);
     sql = Tool_SounderSql();
@@ -52,6 +66,20 @@ MainWindow::MainWindow(QWidget *parent)
     //connect(_list, &Frame_List::signal_list_set, this, &MainWindow::slot_list_set);
     connect(_list, &Frame_List::signal_list_play, this, &MainWindow::slot_list_play);
     connect(btn_close, &My_Btn::clicked, this, &MainWindow::close);
+    connect(btn_mini, &My_Btn::clicked, [=](){ sizeState(0); });
+    connect(btn_size, &My_Btn::clicked, [=]()
+    {
+        if(this->size() == sizes[1])
+        {
+            sizeState(2);
+        }else if(this->size() == sizes[2])
+        {
+            sizeState(1);
+        }else if(this->size() == sizes[0])
+        {
+            sizeState(1);
+        }
+    });
     connect(_list, &Frame_List::signal_sheet_delete, this ,&MainWindow::slot_sheet_delete);
     ui->setupUi(this);
     dbInit();
@@ -154,6 +182,46 @@ void MainWindow::db_addDefaultSheet()
 
 }
 
+void MainWindow::sizeState(int state)
+{
+    this->setMinimumSize(sizes[state]);
+    this->resize(sizes[state]);
+    QScreen *screen = QGuiApplication::primaryScreen ();
+    QRect mm=screen->availableGeometry() ;
+    int screen_width = mm.width();
+    int screen_height = mm.height();
+    this->move( (screen_width - this->width())/2 ,(screen_height - this->height())/2);
+    switch (state)
+    {
+    case 0: //miniSize
+    {
+        _list->hide();
+        btn_mini->hide();
+    }
+    break;
+    case 1://formalSize
+    {
+        if(_list->isHidden())
+            _list->show();
+        if(btn_mini->isHidden())
+            btn_mini->show();
+        this->showNormal();
+    }
+    break;
+    case 2://maxSize
+    {
+        if(_list->isHidden())
+            _list->show();
+        if(btn_mini->isHidden())
+            btn_mini->show();
+        this->showMaximized();
+    }
+    break;
+    }
+
+
+
+}
 void MainWindow::play(QString path)
 {
     _player->Init(path);
@@ -168,16 +236,33 @@ void MainWindow::paintEvent(QPaintEvent *event)
     QPen pen = QPen(QColor(233,195,130),5,Qt::SolidLine); //211,220,213 //233,195,130
     QPainterPath path;
     path.addRoundedRect(QRectF(pen.width(), pen.width(), width() - pen.width()*2, height() - pen.width()*2), 20, 20);
-    paint.save();
     QBrush brush = QBrush(QColor(158,137,99,120)); //158,137,99,80 //123,105,80,120
-    paint.setBrush(brush);
-    paint.drawPath(path);
-    paint.restore();
+    QPainterPath rectPath;
+    rectPath.addRect(pen.width()/2, pen.width()/2, width() - pen.width(), height() - pen.width());
 
-    paint.save();
-    paint.setPen(pen);
-    paint.drawPath(path);
-    paint.restore();
+    if(this->windowState() != Qt::WindowState::WindowMaximized)
+    {
+        paint.save();
+        paint.setBrush(brush);
+        paint.drawPath(path);
+        paint.restore();
+        paint.save();
+        paint.setPen(pen);
+        paint.drawPath(path);
+        paint.restore();
+
+    }else
+    {
+        paint.save();
+        paint.setBrush(brush);
+        paint.drawPath(rectPath);
+        paint.restore();
+        paint.save();
+        paint.setPen(pen);
+        paint.drawPath(rectPath);
+        paint.restore();
+
+    }
 
 }
 
@@ -203,6 +288,58 @@ void MainWindow::mouseMoveEvent(QMouseEvent *event)
 
 }
 
+void MainWindow::mouseDoubleClickEvent(QMouseEvent *event)
+{
+//    QSize cursize = this->size();
+    QScreen *screen = QGuiApplication::primaryScreen ();
+    QRect rect=screen->availableGeometry() ;
+    int screen_width = rect.width();
+    int screen_height = rect.height();
+    QSize minsize = QSize(1400,920);
+//    this->setMinimumSize(1400,920);
+//    this->setMaximumSize(rect.size());
+    int state = this->windowState();
+//    if(   this->size().width() < rect.width()
+//            &&this->size().height() < rect.height()
+//            &&this->size().width() >= minsize.width()
+//            &&this->size().height() >= minsize.height())
+//    {
+//        //this->setWindowState(Qt::WindowMaximized);
+//        this->resize(rect.size());
+//        this->move(0,0);
+//    }else if(this->size().width() == rect.width()
+//             &&this->size().height() == rect.height())
+//    {
+//        //this->setWindowState(Qt::WindowFullScreen);
+//        //this->setWindowState(Qt::WindowNoState);
+//        this->resize(minsize);
+//        this->move( (screen_width - this->width())/2 ,(screen_height - this->height())/2);
+
+//    }
+
+    if(this->size() != sizes[0])
+    {
+        if(this->windowState() == Qt::WindowState::WindowMaximized)
+        {
+            this->showNormal();
+            this->move( (screen_width - this->width())/2 , (screen_height - this->height())/2 );
+        }
+        else if(   (this->size().width() < rect.width()&&this->size().height() < rect.height()
+                &&this->size().width() >= minsize.width()&&this->size().height() >= minsize.height()) || state == Qt::WindowState::WindowNoState  )
+        {
+            this->showMaximized();
+            if(_list->isHidden())
+            {
+                this->setMinimumSize(1400,920);
+                _list->show();
+            }
+            this->move(0,0);
+        }
+
+    }
+
+}
+
 void MainWindow::leaveEvent(QEvent *event)
 {
     _berth->leaveEvent(event);
@@ -214,10 +351,12 @@ void MainWindow::leaveEvent(QEvent *event)
 void MainWindow::resizeEvent(QResizeEvent *event)
 {
     _player->move((this->width() - _player->width())/2,this->height() - this->_player->height() - 10);
-    btn_close->move(this->width() - 30 - btn_close->width(), 20);
+    btn_close->move(this->width() - 30 - btn_close->width(), 30);
+    btn_size->move(btn_close->x() - 30 - btn_size->width(), 30);
+    btn_mini->move(btn_size->x() - 30 - btn_mini->width(), 30);
+
     _list->move(60,60);
     _list->resize(this->width() - 120, this->height() - 60 - _player->height() );
-    qDebug()<<_player->width()<<";"<<_player->height();
 
 }
 
